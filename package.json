@@ -1,0 +1,28 @@
+{
+  "name": "mail-test",
+  "scripts": {
+    "deps": "yarn --check-files --frozen-lockfile",
+    "dev": "jest --watch",
+    "test": "yarn lint && jest --coverage --forceExit",
+    "lint": "eslint --max-warnings=0 --ext .ts,.js --ignore-path .gitignore .",
+    "lint:fix": "eslint --max-warnings=0 --fix --ext .ts,.js --ignore-path .gitignore .",
+    "bundle": "rm -rf build && tsc -b src/tsconfig.json",
+    "doc": "typedoc --options typedoc.config.js src",
+    "reset": "rm -rf build yarn.lock package-lock.json node_modules/* && yarn && jest --clearCache",
+    "build": "yarn deps && yarn test && yarn bundle",
+    "up": "yarn upgrade-interactive --latest",
+    "prepack": "mv build/* ./",
+    "release": "yarn publish --non-interactive"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/jest": "^29.5.5",
+    "jest": "^29.7.0",
+    "node-fetch": "2.6.9",
+    "ts-jest": "^29.1.1"
+  },
+  "dependencies": {
+    "@types/nodemailer": "6.4.9",
+    "nodemailer": "6.9.4"
+  }
+}

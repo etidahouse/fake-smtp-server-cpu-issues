@@ -1,0 +1,71 @@
+#!/bin/bash
+
+set -e
+# shellcheck disable=SC2034
+SH_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# shellcheck disable=SC2034
+ROOT_DIR="$(dirname "$SH_DIR")"
+
+if [ -z "$NPM_TOKEN" ]; then echo "Please define NPM_TOKEN"; exit 1; fi
+
+# shellcheck disable=SC2124
+DEV_COMMAND=${@:-"/bin/bash"}
+COMPONENT=$(basename "$ROOT_DIR")
+ROOT_VOLUME=${ROOT_VOLUME:-$ROOT_DIR}
+ROOT_VOLUME_COMPONENT_PATH=${ROOT_VOLUME_COMPONENT_PATH:-"."}
+ROOT_VOLUME_DEPS_PATH=${ROOT_VOLUME_DEPS_PATH:-"$ROOT_VOLUME_COMPONENT_PATH/node_modules"}
+DEPS_VOLUME=${DEPS_VOLUME:-"dev-$COMPONENT-deps"}
+YARN_CACHE_VOLUME=${YARN_CACHE_VOLUME:-yarn-cache}
+CONTAINER_RUNTIME_OPTIONS=${CONTAINER_RUNTIME_OPTIONS:-""}
+INTERACTIVE=${INTERACTIVE:-"-it"}
+DOCKER_FOR_MAC_OPTIONS=${DOCKER_FOR_MAC_OPTIONS:-""}
+
+CONTAINER_ROOT_PATH="/root/dev-$COMPONENT"
+CONTAINER_DEPS_PATH="$CONTAINER_ROOT_PATH/$ROOT_VOLUME_DEPS_PATH"
+
+DARWIN_OS="Darwin"
+CURRENT_OS="$(uname -s)"
+
+if [ "$DOCKER_FOR_MAC_OPTIONS" == "sync-deps" ]; then
+    if [ "$CURRENT_OS" != "$DARWIN_OS" ]; then echo "Docker for mac not detected."; exit 1; fi
+    if [ "$IGNORE_DOCKER_FOR_MAC_OPTIONS" == "true" ]; then echo "Docker for mac options disabled."; exit 1; fi
+
+    NAME="sync-dev-$COMPONENT-deps"
+    docker run --entrypoint '' --name "$NAME" \
+        -v "$DEPS_VOLUME:$CONTAINER_DEPS_PATH" \
+        "$( "$SH_DIR/dev-image-tag" )" echo "$COMPONENT deps sync from container to host..."
+    docker cp "$NAME:$CONTAINER_DEPS_PATH" "$ROOT_VOLUME/$ROOT_VOLUME_COMPONENT_PATH/"
+    docker rm "$NAME"
+    exit 0
+elif [ "$DOCKER_FOR_MAC_OPTIONS" != "" ]; then
+    echo "Unexpected DOCKER_FOR_MAC_OPTIONS env var: $DOCKER_FOR_MAC_OPTIONS"
+    exit 1
+elif [ "$CURRENT_OS" == "$DARWIN_OS" ] && [ "$IGNORE_DOCKER_FOR_MAC_OPTIONS" != "true" ]; then
+    echo "Docker for mac detected. A named volume will be used for deps: $CONTAINER_DEPS_PATH"
+    DOCKER_FOR_MAC_OPTIONS="-v $DEPS_VOLUME:$CONTAINER_DEPS_PATH"
+fi
+
+CONTAINER_RUNTIME_NAME=${CONTAINER_RUNTIME_NAME:-"dev-$COMPONENT"}
+
+echo "Running $COMPONENT - $DEV_COMMAND"
+
+# shellcheck disable=SC2086
+docker run --rm -d \
+    --name "$CONTAINER_RUNTIME_NAME" \
+    -v "$ROOT_VOLUME:$CONTAINER_ROOT_PATH" $DOCKER_FOR_MAC_OPTIONS \
+    -v "$YARN_CACHE_VOLUME":/usr/local/share/.cache/yarn/v6 \
+    -w "$CONTAINER_ROOT_PATH/$ROOT_VOLUME_COMPONENT_PATH" \
+    -p "8080:8080" \
+    -e NPM_TOKEN \
+    -e "GIT_WORK_TREE=$CONTAINER_ROOT_PATH" \
+    -e "GIT_DIR=$CONTAINER_ROOT_PATH/.git" \
+    $CONTAINER_RUNTIME_OPTIONS "$( "$SH_DIR/dev-image-tag" )"
+
+# shellcheck disable=SC2086
+docker exec $INTERACTIVE \
+    -w "$CONTAINER_ROOT_PATH/$ROOT_VOLUME_COMPONENT_PATH" \
+    "$CONTAINER_RUNTIME_NAME" /bin/bash -c "$DEV_COMMAND" || {
+        docker stop "$CONTAINER_RUNTIME_NAME"; exit 1
+    }
+
+docker stop "$CONTAINER_RUNTIME_NAME"
