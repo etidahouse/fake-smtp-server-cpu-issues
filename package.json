@@ -3,16 +3,9 @@
   "scripts": {
     "deps": "yarn --check-files --frozen-lockfile",
     "dev": "jest --watch",
-    "test": "yarn lint && jest --coverage --forceExit",
-    "lint": "eslint --max-warnings=0 --ext .ts,.js --ignore-path .gitignore .",
-    "lint:fix": "eslint --max-warnings=0 --fix --ext .ts,.js --ignore-path .gitignore .",
-    "bundle": "rm -rf build && tsc -b src/tsconfig.json",
-    "doc": "typedoc --options typedoc.config.js src",
+    "test": "yarn jest --coverage --forceExit",
     "reset": "rm -rf build yarn.lock package-lock.json node_modules/* && yarn && jest --clearCache",
-    "build": "yarn deps && yarn test && yarn bundle",
-    "up": "yarn upgrade-interactive --latest",
-    "prepack": "mv build/* ./",
-    "release": "yarn publish --non-interactive"
+    "up": "yarn upgrade-interactive --latest"
   },
   "type": "module",
   "devDependencies": {

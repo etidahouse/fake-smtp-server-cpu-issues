@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1697291237454" clover="3.2.0">
+  <project timestamp="1697291237454" name="All files">
+    <metrics statements="11" coveredstatements="11" conditionals="12" coveredconditionals="9" methods="2" coveredmethods="2" elements="25" coveredelements="22" complexity="0" loc="11" ncloc="11" packages="1" files="2" classes="2"/>
+    <file name="send.ts" path="/root/dev-fake-smtp-server-cpu-issues/src/send.ts">
+      <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <line num="12" count="1" type="stmt"/>
+      <line num="16" count="1" type="stmt"/>
+      <line num="18" count="1" type="stmt"/>
+      <line num="20" count="1" type="stmt"/>
+    </file>
+    <file name="utils.ts" path="/root/dev-fake-smtp-server-cpu-issues/src/utils.ts">
+      <metrics statements="7" coveredstatements="7" conditionals="12" coveredconditionals="9" methods="1" coveredmethods="1"/>
+      <line num="1" count="1" type="stmt"/>
+      <line num="3" count="1" type="cond" truecount="3" falsecount="1"/>
+      <line num="4" count="1" type="cond" truecount="3" falsecount="1"/>
+      <line num="5" count="1" type="cond" truecount="3" falsecount="1"/>
+      <line num="7" count="1" type="stmt"/>
+      <line num="8" count="1" type="stmt"/>
+      <line num="15" count="1" type="stmt"/>
+    </file>
+  </project>
+</coverage>
