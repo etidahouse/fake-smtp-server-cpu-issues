@@ -16,6 +16,4 @@ export async function send(params: {
     const { mail, transport } = params
   
     await transport.sendMail(mail)
-  
-    transport.close()
 }

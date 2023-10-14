@@ -8,4 +8,6 @@ test('sendMail', async () => {
         transport, 
         mail: { from: 'hello@test.com', to: ['test@hello.com'], subject: 'test', text: 'hello test' },
     })
+
+    transport.close()
 })
